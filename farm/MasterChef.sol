@@ -230,9 +230,13 @@ contract MasterChef is Ownable, ReentrancyGuard {
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         require(startTime!=0, 'not initilized yet');
+        
+        if (block.timestamp <= startTime) {
+            return;
+        }
 
         PoolInfo storage pool = poolInfo[_pid];
-        if( pool.allocPoint==0 || pool.allocPoint==0 || rewardPerSecond == 0) {
+        if( pool.allocPoint==0 || rewardPerSecond == 0) {
             return ;
         }
         if (block.timestamp <= pool.lastRewardTime) {
@@ -282,7 +286,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
         // check the diff , it's income value. 
         uint256 actual_amount = bal2-bal1;
 
-        require(actual_amount<=_amount, " income value should be smaller than argument value. " );
+        require(actual_amount==_amount, " income value should be same with the argument value. " );
 
         user.amount += actual_amount;
         user.rewardDebt += int256((actual_amount.mul( pool.accRewardPerShare)).div(ACC_REWARD_PRECISION));

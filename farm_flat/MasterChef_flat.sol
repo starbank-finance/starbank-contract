@@ -4,7 +4,7 @@
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts (last updated v4.5.0) (token/ERC20/IERC20.sol)
 
 pragma solidity ^0.8.0;
@@ -90,7 +90,7 @@ interface IERC20 {
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 
 pragma solidity ^0.8.1;
@@ -316,7 +316,7 @@ library Address {
 
 // File @openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/utils/SafeERC20.sol)
 
 pragma solidity ^0.8.0;
@@ -417,7 +417,7 @@ library SafeERC20 {
 
 // File @openzeppelin/contracts/utils/math/SafeMath.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts v4.4.1 (utils/math/SafeMath.sol)
 
 pragma solidity ^0.8.0;
@@ -648,7 +648,7 @@ library SafeMath {
 
 // File @openzeppelin/contracts/utils/Context.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
 
 pragma solidity ^0.8.0;
@@ -676,7 +676,7 @@ abstract contract Context {
 
 // File @openzeppelin/contracts/access/Ownable.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 
 pragma solidity ^0.8.0;
@@ -754,7 +754,7 @@ abstract contract Ownable is Context {
 
 // File @openzeppelin/contracts/security/ReentrancyGuard.sol@v4.5.0
 
-// MIT
+//  MIT
 // OpenZeppelin Contracts v4.4.1 (security/ReentrancyGuard.sol)
 
 pragma solidity ^0.8.0;
@@ -819,10 +819,372 @@ abstract contract ReentrancyGuard {
 }
 
 
-// File contracts/farm/MasterChef.sol
+// File @openzeppelin/contracts/utils/structs/EnumerableSet.sol@v4.5.0
 
-// MIT
+//  MIT
+// OpenZeppelin Contracts v4.4.1 (utils/structs/EnumerableSet.sol)
+
+pragma solidity ^0.8.0;
+
+/**
+ * @dev Library for managing
+ * https://en.wikipedia.org/wiki/Set_(abstract_data_type)[sets] of primitive
+ * types.
+ *
+ * Sets have the following properties:
+ *
+ * - Elements are added, removed, and checked for existence in constant time
+ * (O(1)).
+ * - Elements are enumerated in O(n). No guarantees are made on the ordering.
+ *
+ * ```
+ * contract Example {
+ *     // Add the library methods
+ *     using EnumerableSet for EnumerableSet.AddressSet;
+ *
+ *     // Declare a set state variable
+ *     EnumerableSet.AddressSet private mySet;
+ * }
+ * ```
+ *
+ * As of v3.3.0, sets of type `bytes32` (`Bytes32Set`), `address` (`AddressSet`)
+ * and `uint256` (`UintSet`) are supported.
+ */
+library EnumerableSet {
+    // To implement this library for multiple types with as little code
+    // repetition as possible, we write it in terms of a generic Set type with
+    // bytes32 values.
+    // The Set implementation uses private functions, and user-facing
+    // implementations (such as AddressSet) are just wrappers around the
+    // underlying Set.
+    // This means that we can only create new EnumerableSets for types that fit
+    // in bytes32.
+
+    struct Set {
+        // Storage of set values
+        bytes32[] _values;
+        // Position of the value in the `values` array, plus 1 because index 0
+        // means a value is not in the set.
+        mapping(bytes32 => uint256) _indexes;
+    }
+
+    /**
+     * @dev Add a value to a set. O(1).
+     *
+     * Returns true if the value was added to the set, that is if it was not
+     * already present.
+     */
+    function _add(Set storage set, bytes32 value) private returns (bool) {
+        if (!_contains(set, value)) {
+            set._values.push(value);
+            // The value is stored at length-1, but we add 1 to all indexes
+            // and use 0 as a sentinel value
+            set._indexes[value] = set._values.length;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the value was removed from the set, that is if it was
+     * present.
+     */
+    function _remove(Set storage set, bytes32 value) private returns (bool) {
+        // We read and store the value's index to prevent multiple reads from the same storage slot
+        uint256 valueIndex = set._indexes[value];
+
+        if (valueIndex != 0) {
+            // Equivalent to contains(set, value)
+            // To delete an element from the _values array in O(1), we swap the element to delete with the last one in
+            // the array, and then remove the last element (sometimes called as 'swap and pop').
+            // This modifies the order of the array, as noted in {at}.
+
+            uint256 toDeleteIndex = valueIndex - 1;
+            uint256 lastIndex = set._values.length - 1;
+
+            if (lastIndex != toDeleteIndex) {
+                bytes32 lastvalue = set._values[lastIndex];
+
+                // Move the last value to the index where the value to delete is
+                set._values[toDeleteIndex] = lastvalue;
+                // Update the index for the moved value
+                set._indexes[lastvalue] = valueIndex; // Replace lastvalue's index to valueIndex
+            }
+
+            // Delete the slot where the moved value was stored
+            set._values.pop();
+
+            // Delete the index for the deleted slot
+            delete set._indexes[value];
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @dev Returns true if the value is in the set. O(1).
+     */
+    function _contains(Set storage set, bytes32 value) private view returns (bool) {
+        return set._indexes[value] != 0;
+    }
+
+    /**
+     * @dev Returns the number of values on the set. O(1).
+     */
+    function _length(Set storage set) private view returns (uint256) {
+        return set._values.length;
+    }
+
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function _at(Set storage set, uint256 index) private view returns (bytes32) {
+        return set._values[index];
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function _values(Set storage set) private view returns (bytes32[] memory) {
+        return set._values;
+    }
+
+    // Bytes32Set
+
+    struct Bytes32Set {
+        Set _inner;
+    }
+
+    /**
+     * @dev Add a value to a set. O(1).
+     *
+     * Returns true if the value was added to the set, that is if it was not
+     * already present.
+     */
+    function add(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+        return _add(set._inner, value);
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the value was removed from the set, that is if it was
+     * present.
+     */
+    function remove(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+        return _remove(set._inner, value);
+    }
+
+    /**
+     * @dev Returns true if the value is in the set. O(1).
+     */
+    function contains(Bytes32Set storage set, bytes32 value) internal view returns (bool) {
+        return _contains(set._inner, value);
+    }
+
+    /**
+     * @dev Returns the number of values in the set. O(1).
+     */
+    function length(Bytes32Set storage set) internal view returns (uint256) {
+        return _length(set._inner);
+    }
+
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function at(Bytes32Set storage set, uint256 index) internal view returns (bytes32) {
+        return _at(set._inner, index);
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(Bytes32Set storage set) internal view returns (bytes32[] memory) {
+        return _values(set._inner);
+    }
+
+    // AddressSet
+
+    struct AddressSet {
+        Set _inner;
+    }
+
+    /**
+     * @dev Add a value to a set. O(1).
+     *
+     * Returns true if the value was added to the set, that is if it was not
+     * already present.
+     */
+    function add(AddressSet storage set, address value) internal returns (bool) {
+        return _add(set._inner, bytes32(uint256(uint160(value))));
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the value was removed from the set, that is if it was
+     * present.
+     */
+    function remove(AddressSet storage set, address value) internal returns (bool) {
+        return _remove(set._inner, bytes32(uint256(uint160(value))));
+    }
+
+    /**
+     * @dev Returns true if the value is in the set. O(1).
+     */
+    function contains(AddressSet storage set, address value) internal view returns (bool) {
+        return _contains(set._inner, bytes32(uint256(uint160(value))));
+    }
+
+    /**
+     * @dev Returns the number of values in the set. O(1).
+     */
+    function length(AddressSet storage set) internal view returns (uint256) {
+        return _length(set._inner);
+    }
+
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function at(AddressSet storage set, uint256 index) internal view returns (address) {
+        return address(uint160(uint256(_at(set._inner, index))));
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(AddressSet storage set) internal view returns (address[] memory) {
+        bytes32[] memory store = _values(set._inner);
+        address[] memory result;
+
+        assembly {
+            result := store
+        }
+
+        return result;
+    }
+
+    // UintSet
+
+    struct UintSet {
+        Set _inner;
+    }
+
+    /**
+     * @dev Add a value to a set. O(1).
+     *
+     * Returns true if the value was added to the set, that is if it was not
+     * already present.
+     */
+    function add(UintSet storage set, uint256 value) internal returns (bool) {
+        return _add(set._inner, bytes32(value));
+    }
+
+    /**
+     * @dev Removes a value from a set. O(1).
+     *
+     * Returns true if the value was removed from the set, that is if it was
+     * present.
+     */
+    function remove(UintSet storage set, uint256 value) internal returns (bool) {
+        return _remove(set._inner, bytes32(value));
+    }
+
+    /**
+     * @dev Returns true if the value is in the set. O(1).
+     */
+    function contains(UintSet storage set, uint256 value) internal view returns (bool) {
+        return _contains(set._inner, bytes32(value));
+    }
+
+    /**
+     * @dev Returns the number of values on the set. O(1).
+     */
+    function length(UintSet storage set) internal view returns (uint256) {
+        return _length(set._inner);
+    }
+
+    /**
+     * @dev Returns the value stored at position `index` in the set. O(1).
+     *
+     * Note that there are no guarantees on the ordering of values inside the
+     * array, and it may change when more values are added or removed.
+     *
+     * Requirements:
+     *
+     * - `index` must be strictly less than {length}.
+     */
+    function at(UintSet storage set, uint256 index) internal view returns (uint256) {
+        return uint256(_at(set._inner, index));
+    }
+
+    /**
+     * @dev Return the entire set in an array
+     *
+     * WARNING: This operation will copy the entire storage to memory, which can be quite expensive. This is designed
+     * to mostly be used by view accessors that are queried without any gas fees. Developers should keep in mind that
+     * this function has an unbounded cost, and using it as part of a state-changing function may render the function
+     * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
+     */
+    function values(UintSet storage set) internal view returns (uint256[] memory) {
+        bytes32[] memory store = _values(set._inner);
+        uint256[] memory result;
+
+        assembly {
+            result := store
+        }
+
+        return result;
+    }
+}
+
+
+// File contracts/MasterChef.sol
+
+//  MIT
 pragma solidity 0.8.13;
+
 
 
 
@@ -834,13 +1196,30 @@ interface ISBXToken {
     function transfer(address recipient, uint256 amount) external returns (bool);
 }
 
+interface IRewarder {
+    function onSBXReward(
+        uint256 pid,
+        address user,
+        address recipient,
+        uint256 sbxAmount,
+        uint256 newLpAmount
+    ) external;
+
+    function pendingTokens(
+        uint256 pid,
+        address user,
+        uint256 sbxAmount
+    ) external view returns (IERC20[] memory, uint256[] memory);
+}
+
 // It's MasterChef. fork from Sushi, etc...
 // Have fun reading it. Hopefully it's bug-free. God bless.
 
 contract MasterChef is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     // Info of each user.
     struct UserInfo {
         uint256 amount; // How many LP tokens the user has provided.
@@ -848,7 +1227,7 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
     // Info of each pool.
     struct PoolInfo {
-        IERC20 lpToken; // Address of LP token contract.
+        // IERC20 lpToken; // Address of LP token contract.
         uint256 allocPoint; 
         uint256 lastRewardTime;
         uint256 accRewardPerShare; 
@@ -898,6 +1277,15 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
+    // Info of each user that stakes LP tokens per pool. poolId => address => userInfo
+    /// @notice Address of the LP token for each MCV pool.
+    IERC20[] public lpTokens;
+
+    EnumerableSet.AddressSet private lpTokenAddresses;
+
+    /// @notice Address of each `IRewarder` contract in MCV.
+    IRewarder[] public rewarder;
+
     // Info of each user that stakes LP tokens.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo;
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
@@ -905,32 +1293,77 @@ contract MasterChef is Ownable, ReentrancyGuard {
     // The timestamp when reward mining starts.
     uint256 public startTime;
 
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EventHarvest(address indexed user, uint256 indexed pid, uint256 amount, address _to);
-
+    event Deposit(
+        address indexed user,
+        uint256 indexed pid,
+        uint256 amount,
+        address indexed to
+    );
+    event Withdraw(
+        address indexed user,
+        uint256 indexed pid,
+        uint256 amount,
+        address indexed to
+    );
+    event EmergencyWithdraw(
+        address indexed user,
+        uint256 indexed pid,
+        uint256 amount,
+        address indexed to
+    );
+    event Harvest(address indexed user, uint256 indexed pid, uint256 amount);
+    event LogPoolAddition(
+        uint256 indexed pid,
+        uint256 allocPoint,
+        IERC20 indexed lpToken,
+        IRewarder indexed rewarder
+    );
     event LogSetPool(
         uint256 indexed pid,
-        uint256 allocPoint
+        uint256 allocPoint,
+        IRewarder indexed rewarder,
+        bool overwrite
     );
+    event LogUpdatePool(
+        uint256 indexed pid,
+        uint256 lastRewardBlock,
+        uint256 lpSupply,
+        uint256 accRewardPerShare
+    );
+    event SetTreasuryAddress(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event SetDevAddress(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event SetReserve1Address(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event SetReserve2Address(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event SetReserve3Address(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event SetCommuntyGrowthAddress(
+        address indexed oldAddress,
+        address indexed newAddress
+    );
+    event UpdateEmissionRate(address indexed user, uint256 _rewardPerSecond);
+
     uint256 private constant ACC_REWARD_PRECISION = 1e12;
 
-
-    mapping(IERC20 => bool) public poolExistence;
-    modifier nonDuplicated(IERC20 _lpToken) {
-        // Check if the given lpToken already exists in the pool.
-        require(poolExistence[_lpToken] == false, "nonDuplicated: duplicated");
-        _;
-    }
     constructor() {}
 
     function init(
         address _rewardToken,
         uint256 _startTime,
         uint256 _rewardPerSecond
-        // ,
-        // address _fund
     ) external  onlyOwner {
         require (startTime==0, "only one time.");
         require (address(_rewardToken) != address(0),"reward token address error") ;
@@ -940,12 +1373,11 @@ contract MasterChef is Ownable, ReentrancyGuard {
         startTime = _startTime;
 
         devAddress = msg.sender; // temporary 
-        treasuryAddress = msg.sender;
-        reserve1Address = msg.sender;
-        reserve2Address = msg.sender;
-        reserve3Address = msg.sender;
-        communtyGrowthAddress = msg.sender;
-        
+        treasuryAddress = msg.sender;// temporary 
+        reserve1Address = msg.sender;// temporary 
+        reserve2Address = msg.sender;// temporary 
+        reserve3Address = msg.sender;// temporary 
+        communtyGrowthAddress = msg.sender;// temporary 
     }
 
     function poolLength() external view returns (uint256) {
@@ -957,52 +1389,89 @@ contract MasterChef is Ownable, ReentrancyGuard {
     function addPool(
         uint256 _allocPoint,
         IERC20 _lpToken,
+        IRewarder _rewarder, 
         bool _withUpdate
-    ) public onlyOwner nonDuplicated(_lpToken) {
+    ) public onlyOwner {
         require(_allocPoint <= MaxAllocPoint, "add: too many alloc points!!");
         require(address(rewardToken) != address(_lpToken), "reward token should not be lptoken");
-        
+        require(
+            Address.isContract(address(_rewarder)) ||
+                address(_rewarder) == address(0),
+            "add: rewarder must be contract or zero"
+        );
         require(
             Address.isContract(address(_lpToken)),
             "add: LP token must be a valid contract"
         );
-        
+        // we make sure the same LP cannot be added twice which would cause trouble
+        require(
+            !lpTokenAddresses.contains(address(_lpToken)),
+            "add: LP already added"
+        );
+
         if (_withUpdate) {
             massUpdatePools();
         }
         uint256 lastRewardTime = block.timestamp > startTime ? block.timestamp : startTime;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
+
+
+        // LP tokens, rewarders & pools are always on the same index which translates into the pid
+        lpTokens.push(_lpToken);
+        lpTokenAddresses.add(address(_lpToken));
+        rewarder.push(_rewarder);
+
         poolInfo.push(
             PoolInfo({
-                lpToken: _lpToken,
                 allocPoint: _allocPoint,
                 lastRewardTime: lastRewardTime,
                 accRewardPerShare: 0
             })
         );
-        poolExistence[_lpToken] = true;
+
+        emit LogPoolAddition(
+            lpTokens.length - 1,
+            _allocPoint,
+            _lpToken,
+            _rewarder
+        );
     }
  
     // Update the given pool's reward allocation point. Can only be called by the owner.
     function setPool(
         uint256 _pid,
         uint256 _allocPoint,
+        IRewarder _rewarder,
+        bool overwrite, 
         bool _withUpdate
 
     ) public onlyOwner {
-
         require(_allocPoint <= MaxAllocPoint, "add: too many alloc points!!");
+        require(
+            Address.isContract(address(_rewarder)) ||
+                address(_rewarder) == address(0),
+            "set: rewarder must be contract or zero"
+        );
 
         if (_withUpdate) {
             massUpdatePools();
         }
         totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
         poolInfo[_pid].allocPoint = _allocPoint;
+
+        if (overwrite) {
+            rewarder[_pid] = _rewarder;
+        }
+
         emit LogSetPool(
             _pid,
-            _allocPoint
+            _allocPoint,
+            overwrite ? _rewarder : rewarder[_pid],
+            overwrite
         );
     }
+
+
 
     // View function to see pending reward tokens on frontend.
     function pendingReward(uint256 _pid, address _user) external view returns (uint256) {
@@ -1013,17 +1482,17 @@ contract MasterChef is Ownable, ReentrancyGuard {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accRewardPerShare = pool.accRewardPerShare;
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = lpTokens[_pid].balanceOf(address(this));
         if (block.timestamp > pool.lastRewardTime && lpSupply != 0) {
             uint256 delta = block.timestamp - pool.lastRewardTime;
-            uint256 reward = (delta.mul(rewardPerSecond).mul(pool.allocPoint)).div(totalAllocPoint);
-
+            uint256 addedReward = (delta.mul(rewardPerSecond).mul(pool.allocPoint)).div(totalAllocPoint);
             // we take parts of the rewards for treasury, these can be subject to change, so we recalculate it
             // a value of 1000 = 100%
-            uint256 rewardsForPool = (reward * POOL_PERCENTAGE) /
+            uint256 rewardsForPool = (addedReward * POOL_PERCENTAGE) /
                 1000;
             
             accRewardPerShare += (rewardsForPool.mul(ACC_REWARD_PRECISION)).div(lpSupply);
+
         }
         return uint256(int256((user.amount.mul(accRewardPerShare)).div(ACC_REWARD_PRECISION)) - (user.rewardDebt));
     }
@@ -1048,22 +1517,36 @@ contract MasterChef is Ownable, ReentrancyGuard {
     }
 
     // Update reward variables of the given pool to be up-to-date.
-    function updatePool(uint256 _pid) public {
-        require(startTime!=0, 'not initilized yet');
-        if (block.timestamp <= startTime) {
-            return;
+    // function updatePool(uint256 _pid) public {
+    function updatePool(uint256 _pid) public returns (PoolInfo memory pool) {
+        
+        // PoolInfo storage pool = poolInfo[_pid];
+        pool = poolInfo[_pid];
+
+        if (startTime==0) {
+            // return;
+            return pool;
         }
-        PoolInfo storage pool = poolInfo[_pid];
+        
+        if (block.timestamp <= startTime) {
+            // return;
+            return pool;
+        }
+
         if( pool.allocPoint==0 || rewardPerSecond == 0) {
-            return ;
+            // return;
+            return pool;
         }
         if (block.timestamp <= pool.lastRewardTime) {
-            return;
+            // return;
+            return pool;
         }
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        // uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 lpSupply = lpTokens[_pid].balanceOf(address(this));
         if (lpSupply == 0) {
             pool.lastRewardTime = block.timestamp;
-            return;
+            poolInfo[_pid] = pool;
+            return pool;
         }
         uint256 multiplier = getMultiplier(pool.lastRewardTime, block.timestamp);
         uint256 reward = multiplier.mul(rewardPerSecond).mul(pool.allocPoint).div(totalAllocPoint);
@@ -1075,31 +1558,41 @@ contract MasterChef is Ownable, ReentrancyGuard {
         rewardToken.mint(treasuryAddress, reward * TREASURY_PERCENTAGE / 1000 );
         rewardToken.mint(devAddress, reward * DEV_PERCENTAGE / 1000 );
         rewardToken.mint(communtyGrowthAddress, reward * COMMUNITY_PERCENTAGE / 1000 );
-        rewardToken.mint(address(this), reward * POOL_PERCENTAGE / 1000 );
 
-        pool.accRewardPerShare = pool.accRewardPerShare.add(reward.mul(ACC_REWARD_PRECISION).div(lpSupply));
+        uint256 rewardForPool = reward * POOL_PERCENTAGE / 1000;
+        rewardToken.mint(address(this), rewardForPool );
+
+        pool.accRewardPerShare = pool.accRewardPerShare.add(rewardForPool.mul(ACC_REWARD_PRECISION).div(lpSupply));
         pool.lastRewardTime = block.timestamp;
+        poolInfo[_pid] = pool;
+
+        emit LogUpdatePool(
+            _pid,
+            pool.lastRewardTime,
+            lpSupply,
+            pool.accRewardPerShare
+        );
     }
 
     // Deposit LP tokens to MasterChef for reward token allocation.
-    function deposit(uint256 _pid, uint256 _amount) public nonReentrant {
-        require(startTime!=0, 'not initilized yet');
+    function deposit(uint256 _pid, uint256 _amount, address _to) public nonReentrant {
         require(_amount > 0, "deposit should be more than 0");
-
-        PoolInfo storage pool = poolInfo[_pid];
-        UserInfo storage user = userInfo[_pid][msg.sender];
         require (_pid < poolInfo.length, "no exist");
-        require(pool.allocPoint>0 , "cannot deposit this token for now");
+
+        // updatePool(_pid);
+        // PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo memory pool = updatePool(_pid);
+        UserInfo storage user = userInfo[_pid][_to];
+        // require(pool.allocPoint>0 , "cannot deposit this token for now");
         
-        updatePool(_pid);
 
         // check balance before transfer. 
-        uint256 bal1 = pool.lpToken.balanceOf(address(this));
+        uint256 bal1 = lpTokens[_pid].balanceOf(address(this));
 
-        pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        lpTokens[_pid].safeTransferFrom(msg.sender, address(this), _amount);
 
         // check balance after transfer. 
-        uint256 bal2 = pool.lpToken.balanceOf(address(this));
+        uint256 bal2 = lpTokens[_pid].balanceOf(address(this));
 
         // check the diff , it's income value. 
         uint256 actual_amount = bal2-bal1;
@@ -1108,76 +1601,113 @@ contract MasterChef is Ownable, ReentrancyGuard {
 
         user.amount += actual_amount;
         user.rewardDebt += int256((actual_amount.mul( pool.accRewardPerShare)).div(ACC_REWARD_PRECISION));
+        
+        IRewarder _rewarder = rewarder[_pid];
+        if (address(_rewarder) != address(0)) {
+            _rewarder.onSBXReward(_pid, _to, _to, 0, user.amount);
+        }
 
-        emit Deposit(msg.sender, _pid, _amount);
+        emit Deposit(msg.sender, _pid, _amount, _to);
     }
 
     // Withdraw LP tokens from MasterChef.
     function withdraw(uint256 _pid, uint256 _amount, address _to) public nonReentrant {
-        require(startTime!=0, 'not initilized yet');
-        
-        PoolInfo storage pool = poolInfo[_pid];
+
+        // updatePool(_pid);        
+        // PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo memory pool = updatePool(_pid);
         UserInfo storage user = userInfo[_pid][msg.sender];
         if (_to == address(0)) {
             _to = msg.sender;
         }
-        require(user.amount >= _amount, "withdraw: not good");
+        require(user.amount >= _amount, "cannot withdraw more than deposited");
         require(_amount > 0, "withdraw amount should be > 0");
 
 
-        updatePool(_pid);
 
         // check 
-        uint256 bal1 = pool.lpToken.balanceOf(address(this));
+        uint256 bal1 = lpTokens[_pid].balanceOf(address(this));
 
         user.rewardDebt -= int256((_amount.mul( pool.accRewardPerShare)) .div( ACC_REWARD_PRECISION));
         user.amount -= _amount;
         
         // transfer
-        pool.lpToken.safeTransfer(address(msg.sender), _amount);
+        // lpTokens[_pid].safeTransfer(address(msg.sender), _amount);
+        lpTokens[_pid].safeTransfer(_to, _amount);
 
         // check 
-        uint256 bal2 = pool.lpToken.balanceOf(address(this));
+        uint256 bal2 = lpTokens[_pid].balanceOf(address(this));
 
         assert((bal1 - bal2) == _amount);
-        emit Withdraw(msg.sender, _pid, _amount);
+
+        IRewarder _rewarder = rewarder[_pid];
+        if (address(_rewarder) != address(0)) {
+            _rewarder.onSBXReward(
+                _pid,
+                msg.sender,
+                _to,
+                0,
+                user.amount
+            );
+        }
+
+        emit Withdraw(msg.sender, _pid, _amount, _to);
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public nonReentrant {
-        require(startTime!=0, 'not initilized yet');
-        PoolInfo storage pool = poolInfo[_pid];
+    function emergencyWithdraw(uint256 _pid, address _to) public nonReentrant {
         UserInfo storage user = userInfo[_pid][msg.sender];
-        //
         uint256 amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
         
-        pool.lpToken.safeTransfer(address(msg.sender), amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+        IRewarder _rewarder = rewarder[_pid];
+        if (address(_rewarder) != address(0)) {
+            _rewarder.onSBXReward(_pid, msg.sender, _to, 0, 0);
+        }
+        lpTokens[_pid].safeTransfer(_to, amount);
+        emit EmergencyWithdraw(msg.sender, _pid, amount, _to);
         
     }
 
 
+
+
     function harvest(uint256 _pid, address _to) public nonReentrant {
-
-        require(_to != address(0), "cannot withdraw to zero address");
-
-        PoolInfo storage pool = poolInfo[_pid];
+        if (_to==address(0)) {
+            _to = msg.sender;
+        }
+        // updatePool(_pid);
+        // PoolInfo storage pool = poolInfo[_pid];
+        PoolInfo memory pool = updatePool(_pid);
         UserInfo storage user = userInfo[_pid][msg.sender];
 
-        updatePool(_pid);
-
-        int256 accumulatedReward = int256((user.amount.mul(pool.accRewardPerShare)) .div( ACC_REWARD_PRECISION));
+        int256 accumulatedReward = int256((user.amount.mul(pool.accRewardPerShare)).div( ACC_REWARD_PRECISION));
         uint256 pending = uint256(accumulatedReward - user.rewardDebt);
-        require(pending > 0, "no pending reward ");
 
         // Effects
         user.rewardDebt = accumulatedReward;
+
         // Interactions
-        safeRewardTransfer(_to, pending);
-        emit EventHarvest(msg.sender, _pid, pending, _to);
+        if (pending > 0) {
+            safeRewardTransfer(_to, pending);
+        }
+
+        IRewarder _rewarder = rewarder[_pid];
+        if (address(_rewarder) != address(0)) {
+            _rewarder.onSBXReward(
+                _pid,
+                msg.sender,
+                _to,
+                pending,
+                user.amount
+            );
+        }
+
+        emit Harvest(msg.sender, _pid, pending);
+
     }
+
 
 
     function harvestAll(address _to) external {
@@ -1208,36 +1738,43 @@ contract MasterChef is Ownable, ReentrancyGuard {
         }
     }
 
-    function setRewardPerSecond(uint256 _rewardPerSecond, bool _withUpdate) external onlyOwner {
-        require(_rewardPerSecond <= maxRewardPerSecond, "setRewardPerSecond: too many sbxs!");
+    function updateEmissionRate(uint256 _rewardPerSecond, bool _withUpdate) external onlyOwner {
+        require(_rewardPerSecond <= maxRewardPerSecond, "updateEmissionRate: too many sbxs!");
         if (_withUpdate) {
             massUpdatePools();
         }
         rewardPerSecond = _rewardPerSecond;
+        emit UpdateEmissionRate(msg.sender, _rewardPerSecond);
     }
 
     // Update dev address by the previous dev.
     function dev(address _devAddress) public onlyOwner {
+        emit SetDevAddress(devAddress, _devAddress);
         devAddress = _devAddress;
     }
     // Update treasury address by the owner.
     function treasury(address _treasuryAddress) public onlyOwner {
+        emit SetTreasuryAddress(treasuryAddress, _treasuryAddress);
         treasuryAddress = _treasuryAddress;
     }
     // Update reserve1 address by the owner.
     function reserve1(address _reserve1Address) public onlyOwner {
+        emit SetReserve1Address(reserve1Address, _reserve1Address);
         reserve1Address = _reserve1Address;
     }
     // Update reserve2 address by the owner.
     function reserve2(address _reserve2Address) public onlyOwner {
+        emit SetReserve2Address(reserve2Address, _reserve2Address);
         reserve2Address = _reserve2Address;
     }
     // Update reserve3 address by the owner.
     function reserve3(address _reserve3Address) public onlyOwner {
+        emit SetReserve3Address(reserve3Address, _reserve3Address);
         reserve3Address = _reserve3Address;
     }
     // Update communtyGrowth address by the owner.
     function communtyGrowth(address _communtyGrowthAddress) public onlyOwner {
+        emit SetCommuntyGrowthAddress(communtyGrowthAddress, _communtyGrowthAddress);
         communtyGrowthAddress = _communtyGrowthAddress;
     }
     function setStartTime(uint _startTime) external onlyOwner {
